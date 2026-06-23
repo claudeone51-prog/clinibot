@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CliniBot — AI-автоматизация для клиник и салонов</title>
+  <meta name="description" content="AI-агенты записывают клиентов, напоминают о визитах и собирают отзывы круглосуточно. Бесплатный аудит за 1 день." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0A0D14; --surface:#111520; --card:#171C2C; --border:#222840;
+      --accent:#4F8EF7; --accent2:#6DFFE0; --text:#E8EAF2; --muted:#7880A0;
+      --danger:#FF5A5A; --white:#FFFFFF; --success:#00C853;
+      --fd:'Unbounded',sans-serif; --fb:'Manrope',sans-serif;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--fb); font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+
+    /* NAV */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 40px;
+      background:rgba(10,13,20,.88); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      gap:16px;
+    }
+    .logo { font-family:var(--fd); font-size:1.1rem; color:var(--white); letter-spacing:-.02em; flex-shrink:0; }
+    .logo span { color:var(--accent); }
+    .nav-right { display:flex; align-items:center; gap:12px; }
+    .nav-social { display:flex; gap:6px; margin-right:4px; }
+    .nav-social a { color:var(--muted); font-size:1.1rem; transition:color .2s; }
+    .nav-social a:hover { color:var(--white); }
+
+    .lang-switcher {
+      display:flex; align-items:center;
+      background:var(--card); border:1px solid var(--border);
+      border-radius:8px; overflow:hidden;
+    }
+    .lang-btn {
+      padding:7px 13px; font-family:var(--fb); font-size:.78rem; font-weight:700;
+      color:var(--muted); background:transparent; border:none; cursor:pointer;
+      transition:background .15s, color .15s; letter-spacing:.04em;
+    }
+    .lang-btn.active { background:var(--accent); color:var(--white); }
+    .lang-btn:hover:not(.active) { color:var(--text); }
+
+    .nav-cta {
+      background:var(--accent); color:var(--white); border:none;
+      padding:10px 20px; border-radius:8px; font-family:var(--fb);
+      font-weight:700; font-size:.875rem; cursor:pointer;
+      transition:background .2s,transform .15s; text-decoration:none; white-space:nowrap;
+    }
+    .nav-cta:hover { background:#3a7de0; transform:translateY(-1px); }
+
+    /* SECTIONS */
+    section { padding:100px 24px; }
+    .container { max-width:1080px; margin:0 auto; }
+
+    /* HERO */
+    #hero {
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      text-align:center; padding-top:120px; position:relative; overflow:hidden;
+    }
+    .hero-glow {
+      position:absolute; width:700px; height:700px; border-radius:50%;
+      background:radial-gradient(circle,rgba(79,142,247,.18) 0%,transparent 70%);
+      top:50%; left:50%; transform:translate(-50%,-55%); pointer-events:none;
+    }
+    .hero-badge {
+      display:inline-block; background:rgba(79,142,247,.12);
+      border:1px solid rgba(79,142,247,.35); color:var(--accent);
+      font-size:.75rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      padding:6px 16px; border-radius:100px; margin-bottom:28px;
+    }
+    h1 {
+      font-family:var(--fd); font-size:clamp(2rem,5.5vw,4rem); font-weight:900;
+      line-height:1.08; letter-spacing:-.03em; color:var(--white); margin-bottom:24px;
+    }
+    h1 em {
+      font-style:normal;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .hero-sub { font-size:1.1rem; color:var(--muted); max-width:600px; margin:0 auto 40px; line-height:1.75; }
+    .btn-primary {
+      display:inline-block; background:var(--accent); color:var(--white);
+      padding:16px 36px; border-radius:10px; font-weight:800; font-size:1rem;
+      text-decoration:none; border:none; cursor:pointer;
+      transition:background .2s,transform .15s,box-shadow .2s;
+      box-shadow:0 0 40px rgba(79,142,247,.3);
+    }
+    .btn-primary:hover { background:#3a7de0; transform:translateY(-2px); box-shadow:0 0 60px rgba(79,142,247,.45); }
+    .hero-note { margin-top:16px; font-size:.8rem; color:var(--muted); }
+    .hero-stats {
+      display:flex; gap:40px; justify-content:center; flex-wrap:wrap;
+      margin-top:60px; padding-top:48px; border-top:1px solid var(--border);
+    }
+    .stat { text-align:center; }
+    .stat-num { font-family:var(--fd); font-size:2.2rem; font-weight:900; color:var(--white); line-height:1; }
+    .stat-num span { color:var(--accent2); }
+    .stat-label { font-size:.8rem; color:var(--muted); margin-top:4px; }
+
+    /* PAIN */
+    #pain { background:var(--surface); }
+    .section-eyebrow { font-size:.72rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; }
+    h2 { font-family:var(--fd); font-size:clamp(1.6rem,3.5vw,2.6rem); font-weight:900; color:var(--white); letter-spacing:-.025em; line-height:1.15; margin-bottom:20px; }
+    .pain-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; margin-top:48px; }
+    .pain-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px; }
+    .pain-pct { font-family:var(--fd); font-size:2.8rem; font-weight:900; color:var(--danger); line-height:1; margin-bottom:12px; }
+    .pain-card p { color:var(--muted); font-size:.95rem; }
+    .pain-card strong { color:var(--text); }
+
+    /* SOLUTION */
+    #solution .sol-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:24px; margin-top:48px; }
+    .sol-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:30px 26px; transition:border-color .2s,transform .2s; }
+    .sol-card:hover { border-color:var(--accent); transform:translateY(-3px); }
+    .sol-icon { width:48px; height:48px; background:rgba(79,142,247,.12); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; color:var(--accent); margin-bottom:18px; }
+    .sol-card h3 { font-weight:700; font-size:1rem; color:var(--white); margin-bottom:8px; }
+    .sol-card p { font-size:.9rem; color:var(--muted); }
+
+    /* WHO */
+    #who { background:var(--surface); }
+    .who-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; margin-top:48px; }
+    .who-item { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px; text-align:center; }
+    .who-item i { font-size:1.8rem; color:var(--accent2); margin-bottom:12px; display:block; }
+    .who-item h4 { font-weight:700; color:var(--white); margin-bottom:4px; }
+    .who-item p { font-size:.8rem; color:var(--muted); }
+
+    /* HOW */
+    #how .steps { display:flex; flex-direction:column; margin-top:48px; }
+    .step { display:flex; gap:28px; align-items:flex-start; padding:32px 0; border-bottom:1px solid var(--border); }
+    .step:last-child { border-bottom:none; }
+    .step-num { flex-shrink:0; width:52px; height:52px; border-radius:50%; background:rgba(79,142,247,.12); border:1.5px solid var(--accent); display:flex; align-items:center; justify-content:center; font-family:var(--fd); font-size:.85rem; font-weight:900; color:var(--accent); }
+    .step h3 { font-size:1.05rem; font-weight:700; color:var(--white); margin-bottom:6px; }
+    .step p { font-size:.9rem; color:var(--muted); }
+
+    /* CALCULATOR */
+    #calc { background:var(--bg); }
+    .calc-box { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:40px; margin-top:48px; display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; }
+    .calc-box h3 { font-size:1.2rem; color:var(--white); margin-bottom:12px; }
+    .calc-controls { display:flex; flex-direction:column; gap:16px; }
+    .calc-control { display:flex; flex-direction:column; gap:4px; }
+    .calc-control label { font-size:.8rem; color:var(--muted); font-weight:600; }
+    .calc-control input { background:var(--surface); border:1px solid var(--border); color:var(--text); padding:12px 16px; border-radius:8px; font-family:var(--fb); font-size:.9rem; transition:border-color .2s; outline:none; width:100%; }
+    .calc-control input:focus { border-color:var(--accent); }
+    .calc-btn { margin-top:8px; background:var(--accent); color:var(--white); border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; transition:background .2s; font-family:var(--fb); }
+    .calc-btn:hover { background:#3a7de0; }
+    .calc-result { background:var(--surface); border-radius:14px; padding:28px; text-align:center; border:1px solid var(--border); }
+    .calc-result .label { font-size:.8rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+    .calc-result .value { font-family:var(--fd); font-size:3rem; font-weight:900; color:var(--accent2); line-height:1.2; margin:12px 0 6px; }
+    .calc-result .sub { font-size:.85rem; color:var(--muted); }
+    .calc-bar { width:100%; height:6px; background:var(--border); border-radius:4px; margin-top:12px; overflow:hidden; }
+    .calc-bar-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:4px; transition:width .8s ease; }
+
+    /* COUNTER */
+    #counter { background:var(--surface); text-align:center; padding:60px 24px; }
+    .counter-number { font-family:var(--fd); font-size:4rem; font-weight:900; color:var(--accent2); }
+    .counter-label { font-size:.9rem; color:var(--muted); margin-top:8px; }
+
+    /* PRICING */
+    #pricing .price-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:24px; margin-top:48px; align-items:start; }
+    .price-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:32px 28px; position:relative; }
+    .price-card.featured { border-color:var(--accent); background:linear-gradient(145deg,#171C2C,#111b35); }
+    .price-badge { position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:var(--accent); color:var(--white); font-size:.7rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:5px 16px; border-radius:100px; white-space:nowrap; }
+    .price-name { font-weight:700; font-size:.85rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
+    .price-amount { font-family:var(--fd); font-size:2.6rem; font-weight:900; color:var(--white); line-height:1; margin-bottom:6px; }
+    .price-amount sup { font-size:1.2rem; vertical-align:top; margin-top:6px; display:inline-block; }
+    .price-per { font-size:.8rem; color:var(--muted); margin-bottom:24px; }
+    .price-features { list-style:none; margin-bottom:28px; }
+    .price-features li { display:flex; gap:10px; align-items:flex-start; font-size:.88rem; color:var(--text); padding:7px 0; border-bottom:1px solid var(--border); }
+    .price-features li:last-child { border-bottom:none; }
+    .price-features li i { color:var(--accent2); margin-top:3px; flex-shrink:0; }
+    .btn-outline { display:block; width:100%; text-align:center; border:1.5px solid var(--accent); color:var(--accent); padding:13px; border-radius:9px; font-weight:700; font-size:.9rem; text-decoration:none; cursor:pointer; background:transparent; transition:background .2s,color .2s; font-family:var(--fb); }
+    .btn-outline:hover { background:var(--accent); color:var(--white); }
+    .price-card.featured .btn-outline { background:var(--accent); color:var(--white); }
+    .price-card.featured .btn-outline:hover { background:#3a7de0; }
+
+    /* CASE */
+    #case { background:var(--surface); }
+    .case-box { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:48px; display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; margin-top:48px; }
+    .case-label { font-size:.72rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
+    .case-title { font-size:1.4rem; font-weight:800; color:var(--white); margin-bottom:16px; }
+    .case-body { font-size:.95rem; color:var(--muted); line-height:1.75; }
+    .case-metrics { display:flex; flex-direction:column; gap:20px; }
+    .metric { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 24px; }
+    .metric-val { font-family:var(--fd); font-size:2rem; font-weight:900; color:var(--accent2); line-height:1; }
+    .metric-desc { font-size:.82rem; color:var(--muted); margin-top:4px; }
+
+    /* LOGOS */
+    #logos { background:var(--bg); text-align:center; }
+    .logos-grid { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:48px; margin-top:40px; opacity:.6; }
+    .logos-grid span { font-family:var(--fd); font-size:1.2rem; color:var(--muted); letter-spacing:.04em; }
+    .logos-grid span i { margin-right:8px; color:var(--accent2); }
+
+    /* TESTIMONIALS */
+    #testimonials .t-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; margin-top:48px; }
+    .t-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px; }
+    .t-stars { color:#FFB800; font-size:.85rem; margin-bottom:14px; }
+    .t-text { font-size:.9rem; color:var(--text); line-height:1.7; margin-bottom:18px; }
+    .t-author { display:flex; align-items:center; gap:12px; }
+    .t-avatar { width:40px; height:40px; border-radius:50%; background:rgba(79,142,247,.2); display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--accent); font-size:.9rem; }
+    .t-name { font-weight:700; font-size:.85rem; color:var(--white); }
+    .t-role { font-size:.75rem; color:var(--muted); }
+
+    /* FAQ */
+    #faq { background:var(--surface); }
+    .faq-list { margin-top:48px; display:flex; flex-direction:column; gap:12px; }
+    .faq-item { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    .faq-question { width:100%; background:transparent; border:none; padding:20px 24px; display:flex; justify-content:space-between; align-items:center; font-family:var(--fb); font-weight:700; font-size:1rem; color:var(--white); cursor:pointer; text-align:left; transition:background .2s; }
+    .faq-question:hover { background:rgba(79,142,247,.05); }
+    .faq-question i { transition:transform .3s; color:var(--accent); font-size:.9rem; }
+    .faq-item.open .faq-question i { transform:rotate(180deg); }
+    .faq-answer { max-height:0; overflow:hidden; transition:max-height .4s ease, padding .3s ease; padding:0 24px; color:var(--muted); font-size:.9rem; line-height:1.7; }
+    .faq-item.open .faq-answer { max-height:300px; padding:0 24px 24px; }
+
+    /* CTA */
+    #cta { background:linear-gradient(135deg,#0d1528 0%,#0A0D14 100%); border-top:1px solid var(--border); text-align:center; }
+    .cta-box { max-width:680px; margin:0 auto; }
+    .cta-box h2 { margin-bottom:12px; }
+    .cta-box > p { color:var(--muted); margin-bottom:40px; }
+
+    /* FORMSPREE STYLES */
+    .form-wrap { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:36px; text-align:left; position:relative; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-group { display:flex; flex-direction:column; gap:6px; }
+    .form-group.full { grid-column:1/-1; }
+    .form-group label { font-size:.8rem; font-weight:600; color:var(--muted); }
+    .form-group input, .form-group select { background:var(--surface); border:1px solid var(--border); color:var(--text); padding:12px 16px; border-radius:8px; font-family:var(--fb); font-size:.9rem; transition:border-color .2s; outline:none; width:100%; }
+    .form-group input:focus, .form-group select:focus { border-color:var(--accent); }
+    .form-group input::placeholder { color:var(--muted); }
+    .form-group select option { background:var(--card); }
+    .form-group input[aria-invalid="true"] { border-color:var(--danger); }
+    .form-error { color:var(--danger); font-size:.75rem; margin-top:4px; display:none; }
+    .form-error.visible { display:block; }
+    .form-submit { grid-column:1/-1; background:var(--accent); color:var(--white); border:none; padding:15px; border-radius:9px; font-weight:800; font-size:1rem; cursor:pointer; width:100%; margin-top:8px; transition:background .2s,transform .15s; font-family:var(--fb); }
+    .form-submit:hover:not(:disabled) { background:#3a7de0; transform:translateY(-1px); }
+    .form-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .form-privacy { font-size:.75rem; color:var(--muted); text-align:center; margin-top:12px; }
+
+    /* Formspree success/error states */
+    [data-fs-success] { display:none; text-align:center; padding:40px; background:var(--card); border:1px solid var(--border); border-radius:18px; }
+    [data-fs-success] i { font-size:2.5rem; color:var(--accent2); margin-bottom:16px; display:block; }
+    [data-fs-success] h3 { color:var(--white); font-size:1.4rem; margin-bottom:8px; }
+    [data-fs-success] p { color:var(--muted); }
+
+    [data-fs-error] { color:var(--danger); font-size:.85rem; text-align:center; padding:12px; background:rgba(255,90,90,.1); border:1px solid var(--danger); border-radius:8px; margin-top:12px; display:none; }
+    [data-fs-error].visible { display:block; }
+
+    .trust-bar { display:flex; flex-wrap:wrap; justify-content:center; gap:28px; margin-top:36px; padding-top:28px; border-top:1px solid var(--border); align-items:center; }
+    .trust-item { display:flex; align-items:center; gap:8px; font-size:.8rem; color:var(--muted); }
+    .trust-item i { color:var(--accent2); }
+
+    /* FOOTER */
+    footer { background:var(--surface); border-top:1px solid var(--border); padding:28px 24px; text-align:center; font-size:.8rem; color:var(--muted); }
+    footer a { color:var(--accent); text-decoration:none; cursor:pointer; }
+    footer a:hover { text-decoration:underline; }
+    .footer-social { margin:12px 0 8px; display:flex; gap:16px; justify-content:center; }
+    .footer-social a { color:var(--muted); font-size:1.2rem; transition:color .2s; }
+    .footer-social a:hover { color:var(--white); }
+
+    /* MODALS */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:200;
+      background:rgba(0,0,0,.7); backdrop-filter:blur(4px);
+      align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal {
+      background:var(--card); border:1px solid var(--border); border-radius:24px;
+      max-width:720px; width:100%; max-height:90vh; overflow-y:auto;
+      padding:40px; position:relative; color:var(--text);
+    }
+    .modal-close {
+      position:absolute; top:16px; right:20px; background:transparent; border:none;
+      color:var(--muted); font-size:1.8rem; cursor:pointer; transition:color .2s;
+    }
+    .modal-close:hover { color:var(--white); }
+    .modal h2 { font-family:var(--fd); font-size:1.6rem; margin-bottom:20px; color:var(--white); }
+    .modal h3 { font-size:1.05rem; color:var(--white); margin:24px 0 8px; }
+    .modal p, .modal li { color:var(--muted); font-size:.9rem; line-height:1.7; }
+    .modal ul { list-style:disc; padding-left:20px; margin:8px 0 12px; }
+    .modal ul li { margin-bottom:4px; }
+
+    /* ANIMATIONS */
+    .fade-up { opacity:0; transform:translateY(30px); transition:opacity .6s ease, transform .6s ease; }
+    .fade-up.visible { opacity:1; transform:translateY(0); }
+
+    @media(max-width:720px){
+      nav { padding:14px 16px; }
+      .nav-cta { display:none; }
+      .nav-social { display:none; }
+      section { padding:72px 20px; }
+      .hero-stats { gap:24px; }
+      .case-box { grid-template-columns:1fr; gap:28px; padding:28px 20px; }
+      .calc-box { grid-template-columns:1fr; padding:24px; }
+      .form-grid { grid-template-columns:1fr; }
+      .form-group.full { grid-column:auto; }
+      .modal { padding:24px; }
+      .counter-number { font-size:2.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Clini<span>Bot</span></div>
+  <div class="nav-right">
+    <div class="nav-social">
+      <a href="https://wa.me/1234567890" target="_blank" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+      <a href="https://t.me/clinicbot_support" target="_blank" aria-label="Telegram"><i class="fa-brands fa-telegram"></i></a>
+    </div>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('ru')">RU</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+    <a href="#cta" class="nav-cta" data-i18n="nav_cta"></a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow"></div>
+  <div class="container">
+    <div class="hero-badge" data-i18n="hero_badge"></div>
+    <h1 data-i18n-html="hero_h1"></h1>
+    <p class="hero-sub" data-i18n="hero_sub"></p>
+    <a href="#cta" class="btn-primary" data-i18n="hero_cta"></a>
+    <p class="hero-note" data-i18n="hero_note"></p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">−<span>30%</span></div><div class="stat-label" data-i18n="stat1"></div></div>
+      <div class="stat"><div class="stat-num">40<span>h</span></div><div class="stat-label" data-i18n="stat2"></div></div>
+      <div class="stat"><div class="stat-num">24<span>/7</span></div><div class="stat-label" data-i18n="stat3"></div></div>
+      <div class="stat"><div class="stat-num">×<span>5</span></div><div class="stat-label" data-i18n="stat4"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN -->
+<section id="pain">
+  <div class="container">
+    <div class="section-eyebrow" data-i18n="pain_eyebrow"></div>
+    <h2 data-i18n-html="pain_h2"></h2>
+    <p style="color:var(--muted);max-width:520px;" data-i18n="pain_sub"></p>
+    <div class="pain-grid">
+      <div class="pain-card"><div class="pain-pct">15%</div><p data-i18n-html="pain1"></p></div>
+      <div class="pain-card"><div class="pain-pct">10%</div><p data-i18n-html="pain2"></p></div>
+      <div class="pain-card"><div class="pain-pct">20%</div><p data-i18n-html="pain3"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section id="solution">
+  <div class="container">
+    <div class="section-eyebrow" data-i18n="sol_eyebrow"></div>
+    <h2 data-i18n-html="sol_h2"></h2>
+    <p style="color:var(--muted);max-width:540px;" data-i18n="sol_sub"></p>
+    <div class="sol-grid">
+      <div class="sol-card"><div class="sol-icon"><i class="fa-regular fa-calendar-check"></i></div><h3 data-i18n="sol1_title"></h3><p data-i18n="sol1_body"></p></div>
+      <div class="sol-card"><div class="sol-icon"><i class="fa-regular fa-bell"></i></div><h3 data-i18n="sol2_title"></h3><p data-i18n="sol2_body"></p></div>
+      <div class="sol-card"><div class="sol-icon"><i class="fa-regular fa-star"></i></div><h3 data-i18n="sol3_title"></h3><p data-i18n="sol3_body"></p></div>
+      <div class="sol-card"><div class="sol-icon"><i class="fa-solid fa-chart-line"></i></div><h3 data-i18n="sol4_title"></h3><p data-i18n="sol4_body"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO -->
+<section id="who">
+  <div class="container">
+    <div class="section-eyebrow" data-i18n="who_eyebrow"></div>
+    <h2 data-i18n-html="who_h2"></h2>
+    <p style="color:var(--muted);max-width:520px;" data-i18n="who_sub"></p>
+    <div class="who-grid">
+      <div class="who-item"><i class="fa-solid fa-tooth"></i><h4 data-i18n="who1_title"></h4><p data-i18n="who1_body"></p></div>
+      <div class="who-item"><i class="fa-solid fa-scissors"></i><h4 data-i18n="who2_title"></h4><p data-i18n="who2_body"></p></div>
+      <div class="who-item"><i class="fa-solid fa-spa"></i><h4 data-i18n="who3_title"></h4><p data-i18n="who3_body"></p></div>
+      <div class="who-item"><i class="fa-solid fa-dumbbell"></i><h4 data-i18n="who4_title"></h4><p data-i18n="who4_body"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <div class="container">
+    <div class="section-eyebrow" data-i18n="how_eyebrow"></div>
+    <h2 data-i18n-html="how_h2"></h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><div><h3 data-i18n="step1_title"></h3><p data-i18n="step1_body"></p></div></div>
+      <div class="step"><div class="step-num">02</div><div><h3 data-i18n="step2_title"></h3><p data-i18n="step2_body"></p></div></div>
+      <div class="step"><div class="step-num">03</div><div><h3 data-i18n="step3_title"></h3><p data-i18n="step3_body"></p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- COUNTER -->
+<section id="counter">
+  <div class="container">
+    <div class="counter-number" id="live-counter">1,247</div>
+    <div class="counter-label" data-i18n="counter_label">клиентов уже записались через наших ботов</div>
+  </div>
+</section>
+
+<!-- CALCULATOR -->
+<section id="calc">
+  <div class="container">
+    <div class="section-eyebrow" data-i18n="calc_eyebrow"></div>
+    <h2 data-i18n-html="calc_h2"></h2>
+    <p style="color:var(--muted);max-width:520px;" data-i18n="calc_sub"></p>
+    <div class="calc-box">
+      <div>
+        <h3 data-i18n="calc_title"></h3>
+        <div class="calc-controls">
+          <div class="calc-control">
+            <label data-i18n="calc_clients">Количество клиентов в месяц</label>
+            <input type="number" id="calc-clients" value="100" min="1" step="1" />
+          </div>
+          <div class="calc-control">
+            <label data-i18n="calc_no_show">% неявок (без напоминаний)</label>
+            <input type="number" id="calc-noshow" value="15" min="0" max="100" step="1" />
+          </div>
+          <div class="calc-control">
+            <label data-i18n="calc_avg">Средний чек ($)</label>
+            <input type="number" id="calc-avg" value="50" min="1" step="1" />
+          </div>
+          <button class="calc-btn" onclick="updateCalc()"><i class="fa-solid fa-calculator"></i> <span data-i18n="calc_btn">Рассчитать экономию</span></button>
+        </div>
+      </div>
+      <div class="calc-result">
+        <div class="label" data-i18n="calc_result_label">Вы экономите в месяц</div>
+        <div class="value" id="calc-result-value">$750</div>
+        <div class="sub" data-i18n="calc_result_sub">за счёт снижения неявок на 80%</div>
+        <div class="calc-bar"><div class="calc-bar-fill" id="calc-bar-fill" style="width:80%;"></div></div>
+        <div style="margin-top:8px;font-size:.8rem;color:var(--muted);" data-i18n="calc_result_after">при подписке от $99</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS -->
+<section id="logos">
+  <div class="container">
+    <p style="color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;" data-i18n="logos_label">Нам доверяют</p>
+    <div class="logos-grid">
+      <span><i class="fa-regular fa-hospital"></i> DentCare</span>
+      <span><i class="fa-regular fa-gem"></i> BeautyLab</span>
+      <span><i class="fa-regular fa-snowflake"></i> SpaMed</span>
+      <span><i class="fa-regular fa-building"></i> HealthPlus</span>
+      <span><i class="fa-regular fa-star"></i> Glow Clinic</span>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-eyebrow" data-i18n="price_eyebrow"></div>
+    <h2 data-i18n-html="price_h2"></h2>
+    <p style="color:var(--muted);max-width:480px;margin-bottom:0;" data-i18n="price_sub"></p>
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="price-name" data-i18n="p1_name"></div>
+        <div class="price-amount"><sup>$</sup>99</div>
+        <div class="price-per" data-i18n="per_month"></div>
+        <ul class="price-features">
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p1_f1"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p1_f2"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p1_f3"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p1_f4"></span></li>
+        </ul>
+        <a href="#cta" class="btn-outline" data-i18n="btn_start"></a>
+      </div>
+      <div class="price-card featured">
+        <div class="price-badge" data-i18n="popular"></div>
+        <div class="price-name" data-i18n="p2_name"></div>
+        <div class="price-amount"><sup>$</sup>199</div>
+        <div class="price-per" data-i18n="per_month"></div>
+        <ul class="price-features">
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p2_f1"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p2_f2"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p2_f3"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p2_f4"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p2_f5"></span></li>
+        </ul>
+        <a href="#cta" class="btn-outline" data-i18n="btn_start"></a>
+      </div>
+      <div class="price-card">
+        <div class="price-name" data-i18n="p3_name"></div>
+        <div class="price-amount"><sup>$</sup>299</div>
+        <div class="price-per" data-i18n="per_month"></div>
+        <ul class="price-features">
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p3_f1"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p3_f2"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p3_f3"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p3_f4"></span></li>
+          <li><i class="fa-solid fa-check fa-xs"></i><span data-i18n="p3_f5"></span></li>
+        </ul>
+        <a href="#cta" class="btn-outline" data-i18n="btn_start"></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CASE -->
+<section id="case">
+  <div class="container">
+    <div class="section-eyebrow" data-i18n="case_eyebrow"></div>
+    <h2 data-i18n-html="case_h2"></h2>
+    <div class="case-box">
+      <div>
+        <div class="case-label" data-i18n="case_label"></div>
+        <div class="case-title" data-i18n="case_title"></div>
+        <p class="case-body" data-i18n="case_body"></p>
+      </div>
+      <div class="case-metrics">
+        <div class="metric"><div class="metric-val">−80%</div><div class="metric-desc" data-i18n="m1"></div></div>
+        <div class="metric"><div class="metric-val">$1,200</div><div class="metric-desc" data-i18n="m2"></div></div>
+        <div class="metric"><div class="metric-val" data-i18n="m3_val"></div><div class="metric-desc" data-i18n="m3"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="container">
+    <div class="section-eyebrow" data-i18n="t_eyebrow"></div>
+    <h2 data-i18n="t_h2"></h2>
+    <div class="t-grid">
+      <div class="t-card">
+        <div class="t-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+        <p class="t-text" data-i18n="t1_text"></p>
+        <div class="t-author"><div class="t-avatar" data-i18n="t1_av"></div><div><div class="t-name" data-i18n="t1_name"></div><div class="t-role" data-i18n="t1_role"></div></div></div>
+      </div>
+      <div class="t-card">
+        <div class="t-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+        <p class="t-text" data-i18n="t2_text"></p>
+        <div class="t-author"><div class="t-avatar" data-i18n="t2_av"></div><div><div class="t-name" data-i18n="t2_name"></div><div class="t-role" data-i18n="t2_role"></div></div></div>
+      </div>
+      <div class="t-card">
+        <div class="t-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+        <p class="t-text" data-i18n="t3_text"></p>
+        <div class="t-author"><div class="t-avatar" data-i18n="t3_av"></div><div><div class="t-name" data-i18n="t3_name"></div><div class="t-role" data-i18n="t3_role"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-eyebrow" data-i18n="faq_eyebrow"></div>
+    <h2 data-i18n-html="faq_h2"></h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq1_q"></span><i class="fa-solid fa-chevron-down"></i></button>
+        <div class="faq-answer" data-i18n="faq1_a"></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq2_q"></span><i class="fa-solid fa-chevron-down"></i></button>
+        <div class="faq-answer" data-i18n="faq2_a"></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq3_q"></span><i class="fa-solid fa-chevron-down"></i></button>
+        <div class="faq-answer" data-i18n="faq3_a"></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq4_q"></span><i class="fa-solid fa-chevron-down"></i></button>
+        <div class="faq-answer" data-i18n="faq4_a"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA with Formspree -->
+<section id="cta">
+  <div class="container">
+    <div class="cta-box">
+      <div class="section-eyebrow" data-i18n="cta_eyebrow"></div>
+      <h2 data-i18n-html="cta_h2"></h2>
+      <p data-i18n="cta_sub"></p>
+
+      <!-- Formspree Form -->
+      <div class="form-wrap">
+        <div data-fs-success>
+          <i class="fa-solid fa-circle-check"></i>
+          <h3 data-i18n="success_title">Заявка принята!</h3>
+          <p data-i18n="success_body">Мы свяжемся с вами в течение 2 часов и назначим аудит. Проверьте телефон и email.</p>
+        </div>
+        <div data-fs-error></div>
+
+        <form id="contact-form" data-fs-form>
+          <div class="form-grid">
+            <div class="form-group">
+              <label data-i18n="f_name">Ваше имя</label>
+              <input type="text" name="name" id="f-name" data-fs-field placeholder="Иван Петров" required />
+              <span class="form-error" data-fs-error="name"></span>
+            </div>
+            <div class="form-group">
+              <label data-i18n="f_phone">Телефон / Telegram</label>
+              <input type="text" name="phone" id="f-phone" data-fs-field placeholder="+7 900 000-00-00" required />
+              <span class="form-error" data-fs-error="phone"></span>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" name="email" id="f-email" data-fs-field placeholder="hello@clinic.com" required />
+              <span class="form-error" data-fs-error="email"></span>
+            </div>
+            <div class="form-group">
+              <label data-i18n="f_biz">Тип бизнеса</label>
+              <select name="business_type" id="f-biz" data-fs-field>
+                <option value="" data-i18n="f_biz_default">Выберите...</option>
+                <option value="dental" data-i18n="biz1">Стоматология</option>
+                <option value="beauty" data-i18n="biz2">Салон красоты</option>
+                <option value="spa" data-i18n="biz3">Косметология / СПА</option>
+                <option value="other" data-i18n="biz4">Другое</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label data-i18n="f_site">Ссылка на сайт или соцсети</label>
+              <input type="url" name="website" id="f-site" data-fs-field placeholder="https://..." />
+            </div>
+            <!-- Hidden fields -->
+            <input type="hidden" name="_language" value="ru" />
+            <input type="hidden" name="_subject" value="Новая заявка с CliniBot" />
+            <button type="submit" class="form-submit" data-fs-submit-btn>
+              <i class="fa-solid fa-arrow-right" style="margin-right:8px;"></i>
+              <span data-i18n="f_submit">Получить бесплатный аудит</span>
+            </button>
+          </div>
+          <p class="form-privacy">
+            <i class="fa-solid fa-lock" style="color:var(--accent2);margin-right:4px;"></i>
+            <span data-i18n="f_privacy">Данные защищены. Никакого спама.</span>
+          </p>
+        </form>
+      </div>
+
+      <div class="trust-bar">
+        <div class="trust-item"><i class="fa-solid fa-shield-halved"></i><span data-i18n="trust1"></span></div>
+        <div class="trust-item"><i class="fa-solid fa-rotate-left"></i><span data-i18n="trust2"></span></div>
+        <div class="trust-item"><i class="fa-brands fa-telegram"></i><span data-i18n="trust3"></span></div>
+        <div class="trust-item"><i class="fa-solid fa-headset"></i><span data-i18n="trust4"></span></div>
+        <div class="trust-item"><i class="fa-solid fa-globe"></i><span data-i18n="trust5"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-social">
+    <a href="https://wa.me/1234567890" target="_blank" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+    <a href="https://t.me/clinicbot_support" target="_blank" aria-label="Telegram"><i class="fa-brands fa-telegram"></i></a>
+  </div>
+  <p>© 2025 CliniBot · <a onclick="openModal('privacy')" data-i18n="footer_privacy"></a> · <a onclick="openModal('terms')" data-i18n="footer_terms"></a></p>
+  <p style="margin-top:6px;" data-i18n="footer_made"></p>
+</footer>
+
+<!-- MODALS -->
+<div id="modal-privacy" class="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('privacy')">&times;</button>
+    <h2 data-i18n="modal_privacy_title">Политика конфиденциальности</h2>
+    <p data-i18n="modal_privacy_intro">Мы, CliniBot, уважаем вашу приватность и обязуемся защищать персональные данные наших клиентов и посетителей сайта. Настоящая политика описывает, какие данные мы собираем, как их используем и храним.</p>
+    <h3 data-i18n="modal_privacy_h1">1. Какие данные мы собираем</h3>
+    <p data-i18n="modal_privacy_p1">Мы собираем информацию, которую вы добровольно предоставляете: имя, телефон, email, ссылку на сайт и тип бизнеса. Также мы автоматически собираем анонимные данные с помощью cookies — IP-адрес, тип браузера, источник перехода.</p>
+    <h3 data-i18n="modal_privacy_h2">2. Как мы используем ваши данные</h3>
+    <p data-i18n="modal_privacy_p2">Ваши данные используются исключительно для связи с вами, проведения аудита, отправки уведомлений и улучшения качества сервиса. Мы не передаём персональные данные третьим лицам, кроме случаев, предусмотренных законом.</p>
+    <h3 data-i18n="modal_privacy_h3">3. Хранение и защита</h3>
+    <p data-i18n="modal_privacy_p3">Все данные хранятся на защищённых серверах. Мы используем современные методы шифрования и строгую политику доступа, чтобы ваша информация оставалась в безопасности.</p>
+    <h3 data-i18n="modal_privacy_h4">4. Ваши права</h3>
+    <p data-i18n="modal_privacy_p4">Вы можете запросить удаление или изменение ваших данных в любое время, написав нам в Telegram или по email. Мы обработаем ваш запрос в течение 72 часов.</p>
+  </div>
+</div>
+
+<div id="modal-terms" class="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('terms')">&times;</button>
+    <h2 data-i18n="modal_terms_title">Условия использования</h2>
+    <p data-i18n="modal_terms_intro">Добро пожаловать на сайт CliniBot. Используя наш сервис, вы соглашаетесь с нижеперечисленными условиями. Пожалуйста, внимательно их прочитайте.</p>
+    <h3 data-i18n="modal_terms_h1">1. Общие положения</h3>
+    <p data-i18n="modal_terms_p1">CliniBot предоставляет услуги по автоматизации клиник и салонов. Все материалы на сайте носят информационный характер. Мы оставляем за собой право изменять условия в любое время с уведомлением пользователей.</p>
+    <h3 data-i18n="modal_terms_h2">2. Оплата и подписка</h3>
+    <p data-i18n="modal_terms_p2">Оплата происходит ежемесячно или ежеквартально. Подписка может быть отменена в любой момент. При отмене в течение 30 дней после оплаты мы возвращаем полную сумму — без вопросов.</p>
+    <h3 data-i18n="modal_terms_h3">3. Ответственность</h3>
+    <p data-i18n="modal_terms_p3">Мы не несём ответственности за прямые или косвенные убытки, связанные с использованием нашего сервиса, за исключением случаев, предусмотренных законодательством. Вся информация предоставляется «как есть».</p>
+    <h3 data-i18n="modal_terms_h4">4. Интеллектуальная собственность</h3>
+    <p data-i18n="modal_terms_p4">Все материалы, логотипы, тексты и дизайн являются собственностью CliniBot. Копирование или распространение без разрешения запрещено.</p>
+    <h3 data-i18n="modal_terms_h5">5. Контакты</h3>
+    <p data-i18n="modal_terms_p5">По всем вопросам вы можете связаться с нами через <a href="https://t.me/clinicbot_support" target="_blank" style="color:var(--accent);">Telegram</a> или по email: support@clinicbot.com.</p>
+  </div>
+</div>
+
+<!-- Formspree Ajax Library -->
+<script>
+  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  formspree('initForm', { formElement: '#contact-form', formId: 'xojovlon' });
+</script>
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+
+<script>
+// ─── TRANSLATIONS ────────────────────────────────────────────────────────────
+const i18n = {
+  ru: {
+    nav_cta: "Бесплатный аудит",
+    hero_badge: "AI-автоматизация для клиник и салонов",
+    hero_h1: "Ваши конкуренты уже не<br/>теряют <em>30% клиентов.</em><br/>А вы?",
+    hero_sub: "AI-агенты записывают клиентов, напоминают о визитах и собирают отзывы — круглосуточно, без выходных и без зарплаты.",
+    hero_cta: "Получить бесплатный аудит за 1 день →",
+    hero_note: "Без предоплаты. Мы покажем цифры — вы решаете.",
+    stat1: "потеря клиентов",
+    stat2: "свободны у администратора в месяц",
+    stat3: "бот работает без перерыва",
+    stat4: "дешевле штатного сотрудника",
+
+    pain_eyebrow: "Проблема",
+    pain_h2: "Каждый день вы<br/>теряете деньги на ровном месте",
+    pain_sub: "Это не гипотеза. Вот три причины, по которым уходят клиенты, которые уже решили прийти именно к вам.",
+    pain1: "<strong>Клиент не пришёл — никто не напомнил.</strong> Администратор забыл, клиент забыл, кресло стояло пустым. Умножьте на средний чек.",
+    pain2: "<strong>Не смог дозвониться в рабочее время.</strong> Он набрал вас вечером, услышал гудки — и записался к соседям, у которых есть онлайн-запись.",
+    pain3: "<strong>Не выбрал вас из-за рейтинга.</strong> У конкурента 4.8 звезды, у вас 3.2. Не потому что они лучше — просто они собирают отзывы, а вы нет.",
+
+    sol_eyebrow: "Решение",
+    sol_h2: "Бот делает всё это<br/>вместо вашего администратора",
+    sol_sub: "CliniBot — это не просто чат-бот. Это система, которая работает, пока вы спите.",
+    sol1_title: "Онлайн-запись 24/7",
+    sol1_body: "Клиент пишет в Telegram или WhatsApp в любое время — бот уточняет услугу, дату и время и подтверждает запись за 30 секунд.",
+    sol2_title: "Умные напоминания",
+    sol2_body: "За 24 часа и за 2 часа до визита клиент получает сообщение. Неявки снижаются до 80% — без единого звонка от администратора.",
+    sol3_title: "Автосбор отзывов",
+    sol3_body: "После визита бот просит оценку. Довольный клиент идёт на Google Карты. Недовольный — сразу уведомляет владельца.",
+    sol4_title: "Аналитика в реальном времени",
+    sol4_body: "Все данные в одной таблице: кто записан, кто пришёл, кто отменил. Ничего не теряется.",
+
+    who_eyebrow: "Кому подходит",
+    who_h2: "Автоматизация для любого<br/>бизнеса в сфере услуг",
+    who_sub: "Мы уже работаем с десятками клиник и салонов по всему миру.",
+    who1_title: "Стоматологии",
+    who1_body: "Запись на чистку, лечение, имплантацию — бот разбирается в услугах.",
+    who2_title: "Салоны красоты",
+    who2_body: "Стрижки, окрашивание, маникюр — клиенты записываются сами.",
+    who3_title: "Косметология / СПА",
+    who3_body: "Массажи, уходовые процедуры — бот напомнит о визите.",
+    who4_title: "Фитнес-клубы",
+    who4_body: "Персональные тренировки, групповые занятия — автоматическая запись.",
+
+    how_eyebrow: "Как мы работаем",
+    how_h2: "От заявки до запуска<br/>за 3 шага",
+    step1_title: "Вы оставляете заявку на бесплатный аудит",
+    step1_body: "Мы свяжемся в течение 2 часов. Никакой предоплаты — просто разговор о вашем бизнесе.",
+    step2_title: "За 1 день мы считаем ваши реальные потери",
+    step2_body: "Смотрим на поток клиентов, процент неявок, количество отзывов. Результат — конкретные цифры: «Вы теряете X клиентов на сумму Y».",
+    step3_title: "Настраиваем и запускаем бота за 2 дня",
+    step3_body: "Вам не нужно разбираться в технологиях. Мы всё настраиваем под вашу клинику и передаём готовую систему.",
+
+    counter_label: "клиентов уже записались через наших ботов",
+
+    calc_eyebrow: "Калькулятор выгоды",
+    calc_h2: "Сколько денег вы экономите<br/>с CliniBot?",
+    calc_sub: "Введите свои данные — мы покажем приблизительную экономию благодаря снижению неявок.",
+    calc_title: "Введите ваши показатели",
+    calc_clients: "Количество клиентов в месяц",
+    calc_no_show: "% неявок (без напоминаний)",
+    calc_avg: "Средний чек ($)",
+    calc_btn: "Рассчитать экономию",
+    calc_result_label: "Вы экономите в месяц",
+    calc_result_sub: "за счёт снижения неявок на 80%",
+    calc_result_after: "при подписке от $99",
+
+    logos_label: "Нам доверяют",
+
+    price_eyebrow: "Тарифы",
+    price_h2: "В 5 раз дешевле<br/>одного администратора",
+    price_sub: "Все тарифы включают настройку, поддержку и бесплатный месяц при оплате за квартал.",
+    per_month: "в месяц",
+    popular: "Популярный",
+    btn_start: "Начать",
+    p1_name: "Напоминания",
+    p1_f1: "Автоматические напоминания за 24 ч и 2 ч",
+    p1_f2: "Подключение Telegram или WhatsApp",
+    p1_f3: "База клиентов в Google Sheets",
+    p1_f4: "Настройка за 1 день",
+    p2_name: "Запись + Напоминания",
+    p2_f1: "Онлайн-запись через бот 24/7",
+    p2_f2: "Автоматические напоминания",
+    p2_f3: "Подключение к вашей CRM",
+    p2_f4: "Настройка за 2 дня",
+    p2_f5: "Поддержка 7 дней в неделю",
+    p3_name: "Полный пакет",
+    p3_f1: "Всё из тарифа «Запись»",
+    p3_f2: "Автосбор отзывов на Google Картах",
+    p3_f3: "Уведомления при плохих оценках",
+    p3_f4: "Дашборд аналитики",
+    p3_f5: "Приоритетная поддержка",
+
+    case_eyebrow: "Кейс",
+    case_h2: "Реальный результат<br/>за 2 недели",
+    case_label: "Стоматология «Улыбка»",
+    case_title: "30 пустых кресел в месяц превратились в $1 200 дополнительного дохода",
+    case_body: "Клиника теряла 30 клиентов ежемесячно из-за неявок — в среднем $50 каждый. Итого $1 500 потерь. Мы внедрили бота за 2 дня. Уже через 2 недели неявки снизились на 80%. Теперь клиника экономит $1 200 в месяц при подписке $199.",
+    m1: "неявок клиентов после внедрения",
+    m2: "экономия в месяц (при затратах $199)",
+    m3_val: "2 дня",
+    m3: "от заявки до первого работающего бота",
+
+    t_eyebrow: "Отзывы",
+    t_h2: "Что говорят клиенты",
+    t1_text: "«Раньше администратор тратил 2 часа в день на обзвон. Теперь бот делает это сам, а Марина занимается продажей дополнительных процедур. Выручка за месяц выросла на 18%.»",
+    t1_av: "АМ", t1_name: "Алексей Морозов", t1_role: "Владелец стоматологии, Москва",
+    t2_text: "«Мы записывали клиентов только в рабочее время. Теперь каждое утро вижу 3–5 новых записей, которые пришли ночью. Это просто магия, но на самом деле просто бот.»",
+    t2_av: "ЕК", t2_name: "Елена Карпова", t2_role: "Директор салона красоты, Киев",
+    t3_text: "«Рейтинг вырос с 3.9 до 4.6 за полтора месяца. Просто бот вовремя просит отзыв у довольных клиентов. Кажется очевидным, но никто этого не делал.»",
+    t3_av: "ДС", t3_name: "Дмитрий Соколов", t3_role: "Косметологический центр, Алматы",
+
+    faq_eyebrow: "Часто задаваемые вопросы",
+    faq_h2: "Ответы на главные<br/>вопросы",
+    faq1_q: "Сложно ли настроить бота?",
+    faq1_a: "Нет. Мы всё делаем за вас. Вам не нужно быть программистом или разбираться в IT. Мы настраиваем систему под ваш бизнес за 1–2 дня и передаём готовый продукт.",
+    faq2_q: "А если клиент хочет поговорить с живым человеком?",
+    faq2_a: "Бот всегда передаёт сложный запрос администратору. В любой момент клиент может попросить связаться с человеком — мы предусмотрели этот сценарий.",
+    faq3_q: "Как бот работает с моей CRM?",
+    faq3_a: "Мы интегрируемся с большинством популярных CRM: AmoCRM, Bitrix, YClients и другими. Если вашей CRM нет в списке — мы сделаем интеграцию индивидуально.",
+    faq4_q: "Можно ли попробовать перед покупкой?",
+    faq4_a: "Да! Мы даём бесплатный аудит и тестовый период. Вы увидите, как бот работает с вашими клиентами, и только потом принимаете решение.",
+
+    cta_eyebrow: "Начать бесплатно",
+    cta_h2: "Готовы перестать<br/>терять деньги?",
+    cta_sub: "Оставьте заявку — мы свяжемся в течение 2 часов и за 1 день посчитаем, сколько вы теряете прямо сейчас.",
+    f_name: "Ваше имя", f_name_ph: "Иван Петров",
+    f_phone: "Телефон / Telegram", f_phone_ph: "+7 900 000-00-00",
+    f_biz: "Тип бизнеса", f_biz_default: "Выберите...",
+    biz1: "Стоматология", biz2: "Салон красоты", biz3: "Косметология / СПА", biz4: "Другое",
+    f_site: "Ссылка на сайт или соцсети",
+    f_submit: "Получить бесплатный аудит",
+    f_privacy: "Данные защищены. Никакого спама.",
+    f_required: "Пожалуйста, заполните имя, телефон и email.",
+    success_title: "Заявка принята!",
+    success_body: "Мы свяжемся с вами в течение 2 часов и назначим аудит. Проверьте телефон и email.",
+    trust1: "Безопасная оплата", trust2: "Возврат в 30 дней",
+    trust3: "Поддержка в Telegram", trust4: "7 дней в неделю", trust5: "Работаем по всему миру",
+    footer_privacy: "Политика конфиденциальности", footer_terms: "Условия использования",
+    footer_made: "Сделано с ❤️ для тех, кто хочет расти",
+
+    modal_privacy_title: "Политика конфиденциальности",
+    modal_privacy_intro: "Мы, CliniBot, уважаем вашу приватность и обязуемся защищать персональные данные...",
+    modal_privacy_h1: "1. Какие данные мы собираем",
+    modal_privacy_p1: "Мы собираем информацию, которую вы добровольно предоставляете: имя, телефон, email...",
+    modal_privacy_h2: "2. Как мы используем ваши данные",
+    modal_privacy_p2: "Ваши данные используются исключительно для связи с вами...",
+    modal_privacy_h3: "3. Хранение и защита",
+    modal_privacy_p3: "Все данные хранятся на защищённых серверах...",
+    modal_privacy_h4: "4. Ваши права",
+    modal_privacy_p4: "Вы можете запросить удаление или изменение ваших данных...",
+
+    modal_terms_title: "Условия использования",
+    modal_terms_intro: "Добро пожаловать на сайт CliniBot. Используя наш сервис...",
+    modal_terms_h1: "1. Общие положения",
+    modal_terms_p1: "CliniBot предоставляет услуги по автоматизации клиник и салонов...",
+    modal_terms_h2: "2. Оплата и подписка",
+    modal_terms_p2: "Оплата происходит ежемесячно или ежеквартально...",
+    modal_terms_h3: "3. Ответственность",
+    modal_terms_p3: "Мы не несём ответственности за прямые или косвенные убытки...",
+    modal_terms_h4: "4. Интеллектуальная собственность",
+    modal_terms_p4: "Все материалы, логотипы, тексты и дизайн являются собственностью CliniBot...",
+    modal_terms_h5: "5. Контакты",
+    modal_terms_p5: "По всем вопросам вы можете связаться с нами через Telegram...",
+  },
+
+  en: {
+    nav_cta: "Free Audit",
+    hero_badge: "AI Automation for Clinics & Salons",
+    hero_h1: "Your competitors stopped<br/>losing <em>30% of clients.</em><br/>Have you?",
+    hero_sub: "AI agents book appointments, send reminders, and collect reviews — around the clock, no days off, no payroll.",
+    hero_cta: "Get a Free Audit in 1 Day →",
+    hero_note: "No prepayment. We show you the numbers — you decide.",
+    stat1: "fewer lost clients",
+    stat2: "admin hours freed per month",
+    stat3: "bot works non-stop",
+    stat4: "cheaper than one staff member",
+
+    pain_eyebrow: "The Problem",
+    pain_h2: "Every day you lose money<br/>for no good reason",
+    pain_sub: "This isn't a hypothesis. Here are three ways clients leave — even after they decided to book with you.",
+    pain1: "<strong>Client didn't show — nobody reminded them.</strong> The admin forgot, the client forgot, the chair sat empty. Multiply that by your average bill.",
+    pain2: "<strong>Couldn't reach you during business hours.</strong> They called in the evening, got no answer — and booked with a competitor who has online scheduling.",
+    pain3: "<strong>Chose someone else because of ratings.</strong> Your competitor has 4.8 stars, you have 3.2. Not because they're better — they just collect reviews and you don't.",
+
+    sol_eyebrow: "The Solution",
+    sol_h2: "The bot handles all of this<br/>instead of your receptionist",
+    sol_sub: "CliniBot is not just a chatbot. It's a system that works while you sleep.",
+    sol1_title: "Online Booking 24/7",
+    sol1_body: "Clients message via Telegram or WhatsApp at any hour — the bot clarifies the service, date and time, and confirms the booking in 30 seconds.",
+    sol2_title: "Smart Reminders",
+    sol2_body: "Clients get a message 24 hours and 2 hours before their visit. No-shows drop by up to 80% — without a single call from your staff.",
+    sol3_title: "Automated Review Collection",
+    sol3_body: "After the visit the bot asks for a rating. Happy clients go to Google Maps. Unhappy ones instantly alert the owner.",
+    sol4_title: "Real-Time Analytics",
+    sol4_body: "All data in one spreadsheet: who booked, who came, who cancelled. Nothing gets lost.",
+
+    who_eyebrow: "Who it's for",
+    who_h2: "Automation for any<br/>service business",
+    who_sub: "We already work with dozens of clinics and salons worldwide.",
+    who1_title: "Dental Clinics",
+    who1_body: "Booking for cleaning, treatment, implants — the bot understands services.",
+    who2_title: "Beauty Salons",
+    who2_body: "Haircuts, coloring, manicure — clients book themselves.",
+    who3_title: "Aesthetics / Spa",
+    who3_body: "Massages, skincare — the bot reminds about appointments.",
+    who4_title: "Fitness Clubs",
+    who4_body: "Personal training, group classes — automated booking.",
+
+    how_eyebrow: "How It Works",
+    how_h2: "From request to launch<br/>in 3 steps",
+    step1_title: "Submit a request for a free audit",
+    step1_body: "We'll reach out within 2 hours. No prepayment — just a conversation about your business.",
+    step2_title: "We calculate your real losses in 1 day",
+    step2_body: "We look at client flow, no-show rate, and review count. You get concrete numbers: 'You're losing X clients worth $Y per month'.",
+    step3_title: "We set up and launch your bot in 2 days",
+    step3_body: "You don't need to deal with tech. We configure everything for your clinic and hand over a ready system.",
+
+    counter_label: "clients already booked through our bots",
+
+    calc_eyebrow: "Profit Calculator",
+    calc_h2: "How much do you save<br/>with CliniBot?",
+    calc_sub: "Enter your numbers — we'll show your approximate monthly savings from reducing no-shows.",
+    calc_title: "Enter your metrics",
+    calc_clients: "Clients per month",
+    calc_no_show: "% no-shows (without reminders)",
+    calc_avg: "Average ticket ($)",
+    calc_btn: "Calculate savings",
+    calc_result_label: "You save per month",
+    calc_result_sub: "by reducing no-shows by 80%",
+    calc_result_after: "starting from $99/month subscription",
+
+    logos_label: "Trusted by",
+
+    price_eyebrow: "Pricing",
+    price_h2: "5× cheaper than<br/>a single receptionist",
+    price_sub: "All plans include setup, support, and a free month when billed quarterly.",
+    per_month: "/ month",
+    popular: "Most Popular",
+    btn_start: "Get Started",
+    p1_name: "Reminders",
+    p1_f1: "Automatic reminders at 24h and 2h",
+    p1_f2: "Telegram or WhatsApp connection",
+    p1_f3: "Client database in Google Sheets",
+    p1_f4: "Setup in 1 day",
+    p2_name: "Booking + Reminders",
+    p2_f1: "Online booking via bot 24/7",
+    p2_f2: "Automatic reminders",
+    p2_f3: "Integration with your CRM",
+    p2_f4: "Setup in 2 days",
+    p2_f5: "Support 7 days a week",
+    p3_name: "Full Package",
+    p3_f1: "Everything in Booking plan",
+    p3_f2: "Automated Google Maps review requests",
+    p3_f3: "Low-rating owner alerts",
+    p3_f4: "Analytics dashboard",
+    p3_f5: "Priority support",
+
+    case_eyebrow: "Case Study",
+    case_h2: "Real results<br/>in 2 weeks",
+    case_label: "Smile Dental Clinic",
+    case_title: "30 empty chairs per month turned into $1,200 in additional revenue",
+    case_body: "The clinic was losing 30 clients monthly due to no-shows — $50 each on average, totalling $1,500 in losses. We deployed the bot in 2 days. Within 2 weeks no-shows dropped 80%. The clinic now saves $1,200 a month on a $199 subscription.",
+    m1: "reduction in no-shows after launch",
+    m2: "saved per month (at $199 cost)",
+    m3_val: "2 days",
+    m3: "from request to first live bot",
+
+    t_eyebrow: "Testimonials",
+    t_h2: "What clients say",
+    t1_text: '"Before, our receptionist spent 2 hours a day calling clients. Now the bot does it, and Sarah focuses on upselling treatments. Monthly revenue is up 18%."',
+    t1_av: "AM", t1_name: "Alex Morrison", t1_role: "Dental clinic owner, New York",
+    t2_text: '"We only took bookings during business hours. Now every morning I see 3–5 new appointments that came in overnight. Feels like magic — it\'s just the bot."',
+    t2_av: "EK", t2_name: "Emily Kaufman", t2_role: "Beauty salon director, London",
+    t3_text: '"Our rating went from 3.9 to 4.6 in six weeks. The bot simply asks happy clients for a review at the right moment. Obvious in hindsight — nobody was doing it."',
+    t3_av: "DS", t3_name: "David Solis", t3_role: "Aesthetics centre, Miami",
+
+    faq_eyebrow: "FAQ",
+    faq_h2: "Frequently asked<br/>questions",
+    faq1_q: "Is the bot difficult to set up?",
+    faq1_a: "No. We do everything for you. You don't need to be a programmer or understand IT. We set up the system for your business in 1–2 days and hand over a ready product.",
+    faq2_q: "What if a client wants to speak to a real person?",
+    faq2_a: "The bot always forwards complex requests to the admin. At any moment, a client can ask to speak to a human — we've accounted for this scenario.",
+    faq3_q: "How does the bot work with my CRM?",
+    faq3_a: "We integrate with most popular CRMs: AmoCRM, Bitrix, YClients, and others. If your CRM isn't on the list — we'll build a custom integration.",
+    faq4_q: "Can I try before buying?",
+    faq4_a: "Yes! We offer a free audit and trial period. You'll see how the bot works with your clients and only then make a decision.",
+
+    cta_eyebrow: "Start for Free",
+    cta_h2: "Ready to stop<br/>losing money?",
+    cta_sub: "Leave a request — we'll reach out within 2 hours and calculate your losses in 1 day.",
+    f_name: "Your name", f_name_ph: "Jane Smith",
+    f_phone: "Phone / Telegram", f_phone_ph: "+1 555 000-0000",
+    f_biz: "Business type", f_biz_default: "Select...",
+    biz1: "Dental clinic", biz2: "Beauty salon", biz3: "Aesthetics / Spa", biz4: "Other",
+    f_site: "Website or social media link",
+    f_submit: "Get Free Audit",
+    f_privacy: "Your data is secure. No spam.",
+    f_required: "Please fill in your name, phone and email.",
+    success_title: "Request received!",
+    success_body: "We'll contact you within 2 hours to schedule your audit. Check your phone and email.",
+    trust1: "Secure payment", trust2: "30-day money back",
+    trust3: "Telegram support", trust4: "7 days a week", trust5: "Worldwide",
+    footer_privacy: "Privacy Policy", footer_terms: "Terms of Service",
+    footer_made: "Made with ❤️ for businesses that want to grow",
+
+    modal_privacy_title: "Privacy Policy",
+    modal_privacy_intro: "CliniBot respects your privacy and is committed to protecting...",
+    modal_privacy_h1: "1. What data we collect",
+    modal_privacy_p1: "We collect information you voluntarily provide: name, phone, email...",
+    modal_privacy_h2: "2. How we use your data",
+    modal_privacy_p2: "Your data is used solely for communication, conducting audits...",
+    modal_privacy_h3: "3. Storage and protection",
+    modal_privacy_p3: "All data is stored on secure servers...",
+    modal_privacy_h4: "4. Your rights",
+    modal_privacy_p4: "You may request deletion or modification of your data...",
+
+    modal_terms_title: "Terms of Service",
+    modal_terms_intro: "Welcome to CliniBot. By using our service, you agree...",
+    modal_terms_h1: "1. General provisions",
+    modal_terms_p1: "CliniBot provides clinic and salon automation services...",
+    modal_terms_h2: "2. Payment and subscription",
+    modal_terms_p2: "Payment is made monthly or quarterly...",
+    modal_terms_h3: "3. Liability",
+    modal_terms_p3: "We are not liable for any direct or indirect damages...",
+    modal_terms_h4: "4. Intellectual property",
+    modal_terms_p4: "All materials, logos, text, and design are the property of CliniBot...",
+    modal_terms_h5: "5. Contact",
+    modal_terms_p5: "For any questions, you can contact us via Telegram...",
+  }
+};
+
+// ─── ENGINE ──────────────────────────────────────────────────────────────────
+let currentLang = 'ru';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang);
+  });
+
+  const t = i18n[lang];
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.dataset.i18nHtml;
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    if (t[key] !== undefined) el.placeholder = t[key];
+  });
+
+  // Update hidden language field
+  const langField = document.querySelector('input[name="_language"]');
+  if (langField) langField.value = lang;
+
+  document.title = lang === 'ru'
+    ? 'CliniBot — AI-автоматизация для стоматологий и салонов красоты'
+    : 'CliniBot — AI Automation for Dental Clinics & Beauty Salons';
+}
+
+// ─── CALCULATOR ─────────────────────────────────────────────────────────────
+function updateCalc() {
+  const clients = parseInt(document.getElementById('calc-clients').value) || 0;
+  const noShow = parseInt(document.getElementById('calc-noshow').value) || 0;
+  const avg = parseInt(document.getElementById('calc-avg').value) || 0;
+  const lost = Math.round(clients * (noShow / 100) * avg);
+  const saved = Math.round(lost * 0.8);
+  document.getElementById('calc-result-value').textContent = '$' + saved.toLocaleString();
+  const bar = document.getElementById('calc-bar-fill');
+  const pct = Math.min((saved / (clients * avg || 1)) * 100, 100);
+  bar.style.width = Math.min(pct, 100) + '%';
+}
+
+document.addEventListener('DOMContentLoaded', updateCalc);
+
+// ─── FAQ ──────────────────────────────────────────────────────────────────
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// ─── COUNTER ──────────────────────────────────────────────────────────────
+let counterVal = 1247;
+setInterval(() => {
+  counterVal += Math.floor(Math.random() * 3) + 1;
+  document.getElementById('live-counter').textContent = counterVal.toLocaleString();
+}, 5000);
+
+// ─── MODALS ──────────────────────────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById('modal-' + id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById('modal-' + id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+});
+
+// ─── SCROLL ANIMATIONS ──────────────────────────────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// ─── SMOOTH SCROLL ───────────────────────────────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
+  });
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+setLang('ru');
+</script>
+</body>
+</html>
